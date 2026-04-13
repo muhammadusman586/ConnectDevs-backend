@@ -3,6 +3,7 @@ const requestRouter = express.Router();
 const { userAuth } = require("../middlewares/userAuth.js");
 const { ConnectionRequestModel } = require("../models/connectionRequest.js");
 const { User } = require("../models/user.js");
+const { createNotification } = require("../utilis/notification.js");
 
 requestRouter.post(
   "/request/send/:status/:touserId",
@@ -47,6 +48,18 @@ requestRouter.post(
       });
 
       const data = await connectionRequest.save();
+
+      // Create notification for "interested" requests
+      if (status === "interested") {
+        await createNotification({
+          userId: toUserId,
+          type: "request_received",
+          fromUserId,
+          message: `${req.user.firstName} wants to connect with you`,
+          metadata: { requestId: data._id },
+        });
+      }
+
       res.json({
         message:
           req.user.firstName + " is " + status + " in " + toUser.firstName,
@@ -79,6 +92,18 @@ requestRouter.post(
     }
     connectionRequest.status = status;
     const data = await connectionRequest.save();
+
+    // Create notification when request is accepted
+    if (status === "accepted") {
+      await createNotification({
+        userId: connectionRequest.fromUserId,
+        type: "request_accepted",
+        fromUserId: loggedInUser._id,
+        message: `${loggedInUser.firstName} accepted your connection request`,
+        metadata: { requestId: data._id },
+      });
+    }
+
     res.json({
       message: "Connection Request" + status,
       data,

@@ -66,10 +66,12 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
 userRouter.get("/feed", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
-    const page = parseInt(req.params.page) || 1;
-    let limit = parseInt(req.params.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
     limit = limit > 50 ? 50 : limit;
     const skip = (page - 1) * limit;
+
+    const { skills, minAge, maxAge, gender, search } = req.query;
 
     const connectionRequests = await ConnectionRequestModel.find({
       $or: [{ fromUserId: loggedInUser }, { toUserId: loggedInUser }],
@@ -81,18 +83,32 @@ userRouter.get("/feed", userAuth, async (req, res) => {
       hideUsersFromFeed.add(req.toUserId.toString());
     });
 
-    const users = await User.find({
-      $and: [
-        { _id: { $nin: Array.from(hideUsersFromFeed) } },
-        { _id: { $ne: loggedInUser._id } },
-      ],
-    })
+    const filter = {
+      _id: { $nin: Array.from(hideUsersFromFeed) },
+    };
+    filter._id.$ne = loggedInUser._id;
+
+    if (skills) {
+      filter.skills = { $in: skills.split(",").map((s) => s.trim()) };
+    }
+    if (minAge || maxAge) {
+      filter.age = {};
+      if (minAge) filter.age.$gte = parseInt(minAge);
+      if (maxAge) filter.age.$lte = parseInt(maxAge);
+    }
+    if (gender) {
+      filter.gender = gender;
+    }
+    if (search) {
+      const regex = new RegExp(search, "i");
+      filter.$or = [{ firstName: regex }, { lastName: regex }];
+    }
+
+    const users = await User.find(filter)
       .select(selection)
       .skip(skip)
       .limit(limit);
-    
-      // console.log("Api call from frontend");
-    // console.log(users);
+
     res.json({ data: users });
   } catch (error) {
     res.status(404).json({ message: error.message });

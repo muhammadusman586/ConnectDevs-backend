@@ -1,13 +1,17 @@
-const express = require("express");
-const { connectDB } = require("./config/database");
-const app = express();
-const PORT = 3001
 require('dotenv').config();
+const express = require("express");
+const { createServer } = require("http");
+const { Server } = require("socket.io");
+const { connectDB } = require("./config/database");
+const { initializeSocket } = require("./config/socket");
+const app = express();
+const PORT = process.env.PORT || 3001;
 
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+const corsOptions = { origin: "http://localhost:5173", credentials: true };
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -15,17 +19,28 @@ const { authRouter } = require("./routes/auth.js");
 const { profileRouter } = require("./routes/profile.js");
 const { requestRouter } = require("./routes/request.js");
 const { userRouter } = require("./routes/user.js");
+const { chatRouter } = require("./routes/chat.js");
+const { notificationRouter } = require("./routes/notification.js");
+const { setIO } = require("./utilis/notification.js");
 
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
+app.use("/", chatRouter);
+app.use("/", notificationRouter);
+
+const httpServer = createServer(app);
+const io = new Server(httpServer, { cors: corsOptions });
+
+setIO(io);
+initializeSocket(io);
 
 connectDB()
   .then(() => {
     console.log("Database Connected...........");
 
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       console.log(`Server is listening at PORT:${PORT}`);
     });
   })
