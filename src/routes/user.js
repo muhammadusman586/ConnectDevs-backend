@@ -4,7 +4,7 @@ const { ConnectionRequestModel } = require("../models/connectionRequest");
 const { User } = require("../models/user");
 
 const userRouter = express.Router();
-const selection="toUserId firstName lastName photoUrl age gender about skills";
+const selection="toUserId firstName lastName photoUrl age gender about skills github";
 
 userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   try {
@@ -20,6 +20,7 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
       "gender",
       "about",
       "skills",
+      "github",
     ]);
     res.json({
       message: "Data fetched successfully",
@@ -42,11 +43,11 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
     })
       .populate(
         "fromUserId",
-        "firstName lastName photoUrl age gender about skills"
+        "firstName lastName photoUrl age gender about skills github"
       )
       .populate(
         "toUserId",
-        "firstName lastName photoUrl age gender about skills"
+        "firstName lastName photoUrl age gender about skills github"
       );
 
     // console.log(connectionRequests);

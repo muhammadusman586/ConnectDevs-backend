@@ -58,6 +58,13 @@ const userSchema = mongoose.Schema(
     skills: {
       type: [String],
     },
+    github: {
+      username: String,
+      accessToken: String,
+      profileUrl: String,
+      avatarUrl: String,
+      connectedAt: Date,
+    },
     photoUrl: {
       type: String,
       default:
