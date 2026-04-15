@@ -22,6 +22,7 @@ const { userRouter } = require("./routes/user.js");
 const { chatRouter } = require("./routes/chat.js");
 const { notificationRouter } = require("./routes/notification.js");
 const { githubRouter } = require("./routes/github.js");
+const { publicRouter } = require("./routes/public.js");
 const { setIO } = require("./utilis/notification.js");
 
 app.use("/", authRouter);
@@ -31,6 +32,7 @@ app.use("/", userRouter);
 app.use("/", chatRouter);
 app.use("/", notificationRouter);
 app.use("/", githubRouter);
+app.use("/", publicRouter);
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, { cors: corsOptions });

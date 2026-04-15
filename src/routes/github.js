@@ -148,7 +148,7 @@ githubRouter.post("/github/connect-username", userAuth, async (req, res) => {
         },
       },
       { new: true }
-    );
+    ).select("-password");
 
     res.json({ data: updatedUser });
   } catch (error) {

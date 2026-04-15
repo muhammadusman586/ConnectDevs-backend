@@ -6,6 +6,19 @@ const { createNotification } = require("../utilis/notification");
 
 const chatRouter = express.Router();
 
+chatRouter.get("/chat/unread/count", userAuth, async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+    const count = await Message.countDocuments({
+      receiverId: loggedInUser._id,
+      read: false,
+    });
+    res.json({ data: count });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
 // Verify two users are connected before allowing chat
 const verifyConnection = async (userId1, userId2) => {
   const connection = await ConnectionRequestModel.findOne({
@@ -91,20 +104,6 @@ chatRouter.post("/chat/:userId", userAuth, async (req, res) => {
     });
 
     res.status(201).json({ data: message });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
-// GET /chat/unread/count — get total unread message count
-chatRouter.get("/chat/unread/count", userAuth, async (req, res) => {
-  try {
-    const loggedInUser = req.user;
-    const count = await Message.countDocuments({
-      receiverId: loggedInUser._id,
-      read: false,
-    });
-    res.json({ data: count });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

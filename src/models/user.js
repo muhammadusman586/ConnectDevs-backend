@@ -68,7 +68,7 @@ const userSchema = mongoose.Schema(
     photoUrl: {
       type: String,
       default:
-        "https://canningsolicitors.ie/wp-content/uploads/2021/12/00-user-dummy-200x200-1.png",
+        "https://ui-avatars.com/api/?name=Dev&background=FF8A00&color=1a1a00&size=200&bold=true&format=png",
     },
   },
   { timestamps: true }
